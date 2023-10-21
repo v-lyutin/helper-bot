@@ -1,29 +1,36 @@
 package org.telegram.helperbot.bot;
 
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.helperbot.exception.ServiceException;
+import org.telegram.helperbot.service.WeatherService;
 import org.telegram.helperbot.service.impl.ExchangeRateServiceImpl;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
 import java.time.LocalDate;
 
 @Component
 public class HelperBot extends TelegramLongPollingBot {
     private static final Logger log = LoggerFactory.getLogger(HelperBot.class);
     private final ExchangeRateServiceImpl exchangeRateService = new ExchangeRateServiceImpl();
+    private final WeatherService weatherService = new WeatherService();
     private static final String START = "/start";
     private static final String USD = "/usd";
     private static final String EUR = "/eur";
+    private static final String WEATHER = "/weather";
     private static final String HELP = "/help";
+    boolean startWait = false;
 
-    public HelperBot(@Value("${bot.token}") final String botToken) {
-        super(botToken);
+    public HelperBot() {
+        super(System.getenv("BOT_TOKEN"));
     }
+
     @Override
     public void onUpdateReceived(Update update) {
         if (!update.hasMessage() || !update.getMessage().hasText()) {
@@ -33,28 +40,38 @@ public class HelperBot extends TelegramLongPollingBot {
         String message = update.getMessage().getText();
         Long chatId = update.getMessage().getChatId();
 
-        switch (message) {
-            case START: {
-                String userName = update.getMessage().getChat().getUserName();
-                handleStartCommand(chatId, userName);
-                break;
+        if (!startWait) {
+            switch (message) {
+                case START: {
+                    String userName = update.getMessage().getChat().getUserName();
+                    handleStartCommand(chatId, userName);
+                    break;
+                }
+                case USD: {
+                    handleUSDCommand(chatId);
+                    break;
+                }
+                case EUR: {
+                    handleEURCommand(chatId);
+                    break;
+                }
+                case WEATHER: {
+                    sendMessage(chatId, "Напиши город, в котором хочешь узнать погоду");
+                    startWait = true;
+                    break;
+                }
+                case HELP: {
+                    handleHelpCommand(chatId);
+                    break;
+                }
+                default: {
+                    handleUnknownCommand(chatId);
+                    break;
+                }
             }
-            case USD: {
-                handleUSDCommand(chatId);
-                break;
-            }
-            case EUR: {
-                handleEURCommand(chatId);
-                break;
-            }
-            case HELP: {
-                handleHelpCommand(chatId);
-                break;
-            }
-            default: {
-                handleUnknownCommand(chatId);
-                break;
-            }
+        } else {
+            handleWeatherCommand(chatId, message);
+            startWait = false;
         }
     }
 
@@ -66,12 +83,13 @@ public class HelperBot extends TelegramLongPollingBot {
     private void handleStartCommand(Long chatId, String userName) {
         String text =
                 "Серёга Подручный приветсвует, %s!%n%n" +
-                "Могу подсказать по валюте, обращайся.%n%n" +
-                "Для этого используй команды:%n" +
-                "/usd - курс доллара%n" +
-                "/eur - курс евро%n%n" +
-                "Дополнительные команды:%n" +
-                "/help - получение справки%n";
+                        "Могу подсказать по валюте и не только, обращайся.%n%n" +
+                        "Для этого используй команды:%n" +
+                        "/usd - курс доллара%n" +
+                        "/eur - курс евро%n" +
+                        "/weather - прогноз погоды%n%n" +
+                        "Дополнительные команды:%n" +
+                        "/help - получение справки%n";
         String formattedText = String.format(text, userName);
         sendMessage(chatId, formattedText);
     }
@@ -103,12 +121,27 @@ public class HelperBot extends TelegramLongPollingBot {
     }
 
     private void handleHelpCommand(Long chatId) {
-        var text =
+        String text =
                 "Справочная информация по мне\n\n" +
-                "Для получения текущих курсов валют воспользуйся командами:\n" +
-                "/usd - курс доллара\n" +
-                "/eur - курс евро";
+                        "Для получения текущих курсов валют воспользуйся командами:\n" +
+                        "/usd - курс доллара\n" +
+                        "/eur - курс евро\n" +
+                        "/weather - прогноз погоды";
         sendMessage(chatId, text);
+    }
+
+    private void handleWeatherCommand(Long chatId, String city) {
+        String formattedText;
+        try {
+            formattedText = weatherService.getWeather(city);
+        } catch (ParseException | ServiceException exception) {
+            log.error("Ошибка в получении данных о погоде");
+            formattedText = "Не удалось получить данные о погоде. Попробуйте позже.";
+        } catch (NullPointerException exception) {
+            log.error("Введен некорректный город");
+            formattedText = "Проверь название города";
+        }
+        sendMessage(chatId, formattedText);
     }
 
     private void handleUnknownCommand(Long chatId) {
