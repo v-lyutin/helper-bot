@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.helperbot.bot.enums.Command;
+import org.telegram.helperbot.enums.Command;
 import org.telegram.helperbot.exception.ServiceException;
 import org.telegram.helperbot.service.IpService;
 import org.telegram.helperbot.service.WeatherService;
@@ -88,7 +88,7 @@ public class HelperBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "SeregaPodruchniyBot";
+        return System.getenv("BOT_NAME");
     }
 
     private void setBotCommands() {
@@ -146,11 +146,11 @@ public class HelperBot extends TelegramLongPollingBot {
     private void handleHelpCommand(Long chatId) {
         String text =
                 "Справочная информация по мне\n\n" +
-                        "Для получения текущих курсов валют воспользуйся командами:\n" +
-                        "/usd - курс доллара\n" +
-                        "/eur - курс евро\n" +
-                        "/ip - узнат свой IP\n" +
-                        "/weather - прогноз погоды (город на латинице вводи)";
+                "Для получения текущих курсов валют воспользуйся командами:\n" +
+                "/usd - курс доллара\n" +
+                "/eur - курс евро\n" +
+                "/ip - узнат свой IP\n" +
+                "/weather - прогноз погоды (город на латинице вводи)";
         sendMessage(chatId, text);
     }
 

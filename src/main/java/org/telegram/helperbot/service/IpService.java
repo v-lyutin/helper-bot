@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.telegram.helperbot.client.AbstractClient;
-import org.telegram.helperbot.client.enums.URI;
+import org.telegram.helperbot.enums.URI;
 import org.telegram.helperbot.exception.ServiceException;
 
 @Service

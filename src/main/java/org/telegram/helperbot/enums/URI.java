@@ -1,4 +1,4 @@
-package org.telegram.helperbot.client.enums;
+package org.telegram.helperbot.enums;
 
 public enum URI {
     CBR_URL("http://www.cbr.ru/scripts/XML_daily.asp"),

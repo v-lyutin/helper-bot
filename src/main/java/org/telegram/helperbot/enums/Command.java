@@ -1,4 +1,4 @@
-package org.telegram.helperbot.bot.enums;
+package org.telegram.helperbot.enums;
 
 public enum Command {
     START("/start"),
