@@ -105,7 +105,7 @@ public class HelperBot extends TelegramLongPollingBot {
 
     private void handleStartCommand(Long chatId, String userName) {
         String text =
-                "Серёга Подручный приветсвует, %s!%n%n" +
+                "Серёга Подручный приветствует, %s!%n%n" +
                 "Могу подсказать по валюте и не только, обращайся.%n" +
                 "Для получения справки по командам используй /help!";
         String formattedText = String.format(text, userName);
