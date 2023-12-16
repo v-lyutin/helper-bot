@@ -1,6 +1,5 @@
 package org.telegram.helperbot.configuration;
 
-import okhttp3.OkHttp;
 import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

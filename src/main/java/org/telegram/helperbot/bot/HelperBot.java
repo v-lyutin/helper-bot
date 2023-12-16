@@ -3,22 +3,24 @@ package org.telegram.helperbot.bot;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.helperbot.exception.ServiceException;
 import org.telegram.helperbot.service.WeatherService;
-import org.telegram.helperbot.service.impl.ExchangeRateServiceImpl;
+import org.telegram.helperbot.service.ExchangeRateService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class HelperBot extends TelegramLongPollingBot {
     private static final Logger log = LoggerFactory.getLogger(HelperBot.class);
-    private final ExchangeRateServiceImpl exchangeRateService = new ExchangeRateServiceImpl();
+    private final ExchangeRateService exchangeRateService = new ExchangeRateService();
     private final WeatherService weatherService = new WeatherService();
     private static final String START = "/start";
     private static final String USD = "/usd";
@@ -29,6 +31,7 @@ public class HelperBot extends TelegramLongPollingBot {
 
     public HelperBot() {
         super(System.getenv("BOT_TOKEN"));
+        setBotCommands();
     }
 
     @Override
@@ -78,6 +81,22 @@ public class HelperBot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return "SeregaPodruchniyBot";
+    }
+
+    private void setBotCommands() {
+        List<BotCommand> commands = List.of(
+                new BotCommand(START, "приветственное сообщение"),
+                new BotCommand(USD, "курс доллара"),
+                new BotCommand(EUR, "курс евро"),
+                new BotCommand(WEATHER, "прогноз погоды"),
+                new BotCommand(HELP, "помощь")
+        );
+
+        try {
+            this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
+        } catch (TelegramApiException exception) {
+            log.error("Error setting bot's command list: " + exception);
+        }
     }
 
     private void handleStartCommand(Long chatId, String userName) {
