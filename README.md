@@ -12,7 +12,7 @@
 ### Пример работы бота
 
 <video controls>
-  <source src="src/main/resources/static/IMG_0561.MP4" type="video/mp4">
+  <source src="https://github.com/v-lyutin/helper-bot/blob/76d223810516282c474abb460e8a103b158f72ac/src/main/resources/static/IMG_0561.MP4" type="video/mp4">
 </video>
 
 
