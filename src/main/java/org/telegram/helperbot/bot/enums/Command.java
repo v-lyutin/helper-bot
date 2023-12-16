@@ -4,7 +4,7 @@ public enum Command {
     START("/start"),
     USD("/usd"),
     EUR("/eur"),
-    WEATHER("/start"),
+    WEATHER("/weather"),
     IP("/ip"),
     HELP("/help"),
     UNKNOWN("");

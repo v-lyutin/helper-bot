@@ -144,7 +144,7 @@ public class HelperBot extends TelegramLongPollingBot {
                         "Для получения текущих курсов валют воспользуйся командами:\n" +
                         "/usd - курс доллара\n" +
                         "/eur - курс евро\n" +
-                        "/ip - узнат свой IP" +
+                        "/ip - узнат свой IP\n" +
                         "/weather - прогноз погоды (город на латинице вводи)";
         sendMessage(chatId, text);
     }
