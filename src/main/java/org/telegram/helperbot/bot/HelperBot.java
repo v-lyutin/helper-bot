@@ -3,8 +3,8 @@ package org.telegram.helperbot.bot;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.helperbot.bot.enums.Command;
 import org.telegram.helperbot.exception.ServiceException;
 import org.telegram.helperbot.service.IpService;
 import org.telegram.helperbot.service.WeatherService;
@@ -25,12 +25,6 @@ public class HelperBot extends TelegramLongPollingBot {
     private final ExchangeRateService exchangeRateService = new ExchangeRateService();
     private final WeatherService weatherService = new WeatherService();
     private final IpService ipService = new IpService();
-    private static final String START = "/start";
-    private static final String USD = "/usd";
-    private static final String EUR = "/eur";
-    private static final String WEATHER = "/weather";
-    private static final String IP = "/ip";
-    private static final String HELP = "/help";
     boolean startWait = false;
 
     public HelperBot() {
@@ -44,11 +38,12 @@ public class HelperBot extends TelegramLongPollingBot {
             return;
         }
 
-        String message = update.getMessage().getText();
         Long chatId = update.getMessage().getChatId();
+        String message = update.getMessage().getText();
+        Command command = Command.getCommand(message);
 
         if (!startWait) {
-            switch (message) {
+            switch (command) {
                 case START: {
                     String userName = update.getMessage().getChat().getUserName();
                     handleStartCommand(chatId, userName);
@@ -93,12 +88,12 @@ public class HelperBot extends TelegramLongPollingBot {
 
     private void setBotCommands() {
         List<BotCommand> commands = List.of(
-                new BotCommand(START, "приветственное сообщение"),
-                new BotCommand(USD, "курс доллара"),
-                new BotCommand(EUR, "курс евро"),
-                new BotCommand(WEATHER, "прогноз погоды"),
-                new BotCommand(IP, "узнать свой ip"),
-                new BotCommand(HELP, "помощь")
+                new BotCommand(Command.START.getCommand(), "приветственное сообщение"),
+                new BotCommand(Command.USD.getCommand(), "курс доллара"),
+                new BotCommand(Command.EUR.getCommand(), "курс евро"),
+                new BotCommand(Command.WEATHER.getCommand(), "прогноз погоды"),
+                new BotCommand(Command.IP.getCommand(), "узнать свой ip"),
+                new BotCommand(Command.HELP.getCommand(), "помощь")
         );
 
         try {
@@ -111,13 +106,8 @@ public class HelperBot extends TelegramLongPollingBot {
     private void handleStartCommand(Long chatId, String userName) {
         String text =
                 "Серёга Подручный приветсвует, %s!%n%n" +
-                        "Могу подсказать по валюте и не только, обращайся.%n%n" +
-                        "Для этого используй команды:%n" +
-                        "/usd - курс доллара%n" +
-                        "/eur - курс евро%n" +
-                        "/weather - прогноз погоды%n%n" +
-                        "Дополнительные команды:%n" +
-                        "/help - получение справки%n";
+                "Могу подсказать по валюте и не только, обращайся.%n" +
+                "Для получения справки по командам используй /help!";
         String formattedText = String.format(text, userName);
         sendMessage(chatId, formattedText);
     }
@@ -154,7 +144,8 @@ public class HelperBot extends TelegramLongPollingBot {
                         "Для получения текущих курсов валют воспользуйся командами:\n" +
                         "/usd - курс доллара\n" +
                         "/eur - курс евро\n" +
-                        "/weather - прогноз погоды";
+                        "/ip - узнат свой IP" +
+                        "/weather - прогноз погоды (город на латинице вводи)";
         sendMessage(chatId, text);
     }
 
