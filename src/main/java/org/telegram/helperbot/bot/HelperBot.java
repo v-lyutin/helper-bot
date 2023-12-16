@@ -3,6 +3,7 @@ package org.telegram.helperbot.bot;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.helperbot.bot.enums.Command;
 import org.telegram.helperbot.exception.ServiceException;
@@ -22,13 +23,17 @@ import java.util.List;
 @Component
 public class HelperBot extends TelegramLongPollingBot {
     private static final Logger log = LoggerFactory.getLogger(HelperBot.class);
-    private final ExchangeRateService exchangeRateService = new ExchangeRateService();
-    private final WeatherService weatherService = new WeatherService();
-    private final IpService ipService = new IpService();
+    private final ExchangeRateService exchangeRateService;
+    private final WeatherService weatherService;
+    private final IpService ipService;
     boolean startWait = false;
 
-    public HelperBot() {
+    @Autowired
+    public HelperBot(ExchangeRateService exchangeRateService, WeatherService weatherService, IpService ipService) {
         super(System.getenv("BOT_TOKEN"));
+        this.exchangeRateService = exchangeRateService;
+        this.weatherService = weatherService;
+        this.ipService = ipService;
         setBotCommands();
     }
 

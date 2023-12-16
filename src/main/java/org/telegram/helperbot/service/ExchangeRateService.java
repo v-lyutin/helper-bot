@@ -1,7 +1,10 @@
 package org.telegram.helperbot.service;
 
-import org.jvnet.hk2.annotations.Service;
-import org.telegram.helperbot.client.CbrClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.telegram.helperbot.client.AbstractClient;
+import org.telegram.helperbot.client.enums.URI;
 import org.telegram.helperbot.exception.ServiceException;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -15,17 +18,22 @@ import java.io.StringReader;
 public class ExchangeRateService {
     private static final String USD_XPATH = "/ValCurs//Valute[@ID='R01235']/Value";
     private static final String EUR_XPATH = "/ValCurs//Valute[@ID='R01239']/Value";
-    private final CbrClient client = new CbrClient();
+    private final AbstractClient client;
+
+    @Autowired
+    public ExchangeRateService(@Qualifier("abstractClient") AbstractClient client) {
+        this.client = client;
+    }
 
     public String getUSDRateExchange() throws ServiceException {
-        String xml = client.getCurrencyRateXML().orElseThrow(
+        String xml = client.getStringRepresentationOfData(URI.CBR_URL.getUrl()).orElseThrow(
                 () -> new ServiceException("Не удалось получить XML")
         );
         return getCurrencyValueFromXML(xml, USD_XPATH);
     }
 
     public String getEURRateExchange() throws ServiceException {
-        String xml = client.getCurrencyRateXML().orElseThrow(
+        String xml = client.getStringRepresentationOfData(URI.CBR_URL.getUrl()).orElseThrow(
                 () -> new ServiceException("Не удалось получить XML")
         );
         return getCurrencyValueFromXML(xml, EUR_XPATH);

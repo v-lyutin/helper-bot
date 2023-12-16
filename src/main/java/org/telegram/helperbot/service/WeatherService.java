@@ -4,6 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.helperbot.client.OpenWeatherClient;
 import org.telegram.helperbot.exception.ServiceException;
@@ -15,8 +16,14 @@ import java.util.Map;
 
 @Service
 public class WeatherService {
-    private final OpenWeatherClient client = new OpenWeatherClient();
-    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+    private final OpenWeatherClient client;
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    @Autowired
+    public WeatherService(OpenWeatherClient client) {
+        this.client = client;
+    }
+
     private final Map<String, String> emoji = Map.of(
             "Clear", "Ясно",
             "Clouds", "Облачно",
