@@ -3,8 +3,10 @@ package org.telegram.helperbot.bot;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.helperbot.exception.ServiceException;
+import org.telegram.helperbot.service.IpService;
 import org.telegram.helperbot.service.WeatherService;
 import org.telegram.helperbot.service.ExchangeRateService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -22,10 +24,12 @@ public class HelperBot extends TelegramLongPollingBot {
     private static final Logger log = LoggerFactory.getLogger(HelperBot.class);
     private final ExchangeRateService exchangeRateService = new ExchangeRateService();
     private final WeatherService weatherService = new WeatherService();
+    private final IpService ipService = new IpService();
     private static final String START = "/start";
     private static final String USD = "/usd";
     private static final String EUR = "/eur";
     private static final String WEATHER = "/weather";
+    private static final String IP = "/ip";
     private static final String HELP = "/help";
     boolean startWait = false;
 
@@ -63,6 +67,10 @@ public class HelperBot extends TelegramLongPollingBot {
                     startWait = true;
                     break;
                 }
+                case IP: {
+                    handleIpCommand(chatId);
+                    break;
+                }
                 case HELP: {
                     handleHelpCommand(chatId);
                     break;
@@ -89,6 +97,7 @@ public class HelperBot extends TelegramLongPollingBot {
                 new BotCommand(USD, "курс доллара"),
                 new BotCommand(EUR, "курс евро"),
                 new BotCommand(WEATHER, "прогноз погоды"),
+                new BotCommand(IP, "узнать свой ip"),
                 new BotCommand(HELP, "помощь")
         );
 
@@ -159,6 +168,16 @@ public class HelperBot extends TelegramLongPollingBot {
         } catch (NullPointerException exception) {
             log.error("Введен некорректный город");
             formattedText = "Проверь название города";
+        }
+        sendMessage(chatId, formattedText);
+    }
+
+    private void handleIpCommand(Long chatId) {
+        String formattedText;
+        try {
+            formattedText = ipService.getIp();
+        } catch (ParseException | ServiceException exception) {
+            formattedText = "Не удалось получить IP";
         }
         sendMessage(chatId, formattedText);
     }

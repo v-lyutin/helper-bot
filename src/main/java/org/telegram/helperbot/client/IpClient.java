@@ -4,24 +4,26 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.springframework.stereotype.Component;
 import org.telegram.helperbot.exception.ServiceException;
 import java.io.IOException;
 import java.util.Optional;
 
-public class OpenWeatherClient {
+@Component
+public class IpClient {
     private final OkHttpClient client = new OkHttpClient();
-    private final String token = System.getenv("OPEN_WEATHER_TOKEN");
+    private final String url = "https://api.ipify.org/?format=json";
 
-    public Optional<String> getWeatherJSON(String city) throws ServiceException {
+    public Optional<String> getIp() throws ServiceException {
         Request request = new Request.Builder()
-                .url("https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + token + "&units=metric")
+                .url(url)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             ResponseBody body = response.body();
             return body == null ? Optional.empty() : Optional.of(body.string());
         } catch (IOException exception) {
-            throw new ServiceException("Ошибка в получении погоды", exception);
+            throw new ServiceException("Ошибка в получении IP");
         }
     }
 }

@@ -4,6 +4,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.stereotype.Service;
 import org.telegram.helperbot.client.OpenWeatherClient;
 import org.telegram.helperbot.exception.ServiceException;
 import java.text.SimpleDateFormat;
@@ -12,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
+@Service
 public class WeatherService {
     private final OpenWeatherClient client = new OpenWeatherClient();
     public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -26,7 +28,7 @@ public class WeatherService {
     );
 
     public String getWeather(String city) throws ParseException, ServiceException {
-        String json = client.getWeather(city).orElseThrow(
+        String json = client.getWeatherJSON(city).orElseThrow(
                 () -> new ServiceException("Не удалось получить JSON")
         );
         return getWeatherFromJSON(json);
