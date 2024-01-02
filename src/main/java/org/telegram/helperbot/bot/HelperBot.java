@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.helperbot.enums.Command;
 import org.telegram.helperbot.exception.ServiceException;
 import org.telegram.helperbot.service.IpService;
+import org.telegram.helperbot.service.PortScanService;
 import org.telegram.helperbot.service.WeatherService;
 import org.telegram.helperbot.service.ExchangeRateService;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -26,14 +27,18 @@ public class HelperBot extends TelegramLongPollingBot {
     private final ExchangeRateService exchangeRateService;
     private final WeatherService weatherService;
     private final IpService ipService;
+    private final PortScanService portScanService;
     boolean startWait = false;
+    private static Command breakpointCommand = Command.UNKNOWN;
 
     @Autowired
-    public HelperBot(ExchangeRateService exchangeRateService, WeatherService weatherService, IpService ipService) {
+    public HelperBot(ExchangeRateService exchangeRateService, WeatherService weatherService, IpService ipService,
+                     PortScanService portScanService) {
         super(System.getenv("BOT_TOKEN"));
         this.exchangeRateService = exchangeRateService;
         this.weatherService = weatherService;
         this.ipService = ipService;
+        this.portScanService = portScanService;
         setBotCommands();
     }
 
@@ -65,10 +70,17 @@ public class HelperBot extends TelegramLongPollingBot {
                 case WEATHER: {
                     sendMessage(chatId, "Напиши город, в котором хочешь узнать погоду");
                     startWait = true;
+                    breakpointCommand = Command.WEATHER;
                     break;
                 }
                 case IP: {
                     handleIpCommand(chatId);
+                    break;
+                }
+                case SCAN_PORTS: {
+                    sendMessage(chatId, "Напиши имя хоста, который хочешь просканировать");
+                    startWait = true;
+                    breakpointCommand = Command.SCAN_PORTS;
                     break;
                 }
                 case HELP: {
@@ -80,8 +92,12 @@ public class HelperBot extends TelegramLongPollingBot {
                     break;
                 }
             }
-        } else {
+        } else if (breakpointCommand == Command.WEATHER) {
             handleWeatherCommand(chatId, message);
+            startWait = false;
+        } else if (breakpointCommand == Command.SCAN_PORTS) {
+            sendMessage(chatId, "Начинаю сканирование... Ожидай ответа в течение одной минуты!");
+            handlePortScanCommand(chatId, message);
             startWait = false;
         }
     }
@@ -98,6 +114,7 @@ public class HelperBot extends TelegramLongPollingBot {
                 new BotCommand(Command.EUR.getCommand(), "курс евро"),
                 new BotCommand(Command.WEATHER.getCommand(), "прогноз погоды"),
                 new BotCommand(Command.IP.getCommand(), "узнать свой ip"),
+                new BotCommand(Command.SCAN_PORTS.getCommand(), "просканировать открыте порты"),
                 new BotCommand(Command.HELP.getCommand(), "помощь")
         );
 
@@ -149,7 +166,8 @@ public class HelperBot extends TelegramLongPollingBot {
                 "Для получения текущих курсов валют воспользуйся командами:\n" +
                 "/usd - курс доллара\n" +
                 "/eur - курс евро\n" +
-                "/ip - узнат свой IP\n" +
+                "/ip - узнать свой IP\n" +
+                "/port_scan - узнать открыте порты хоста\n" +
                 "/weather - прогноз погоды (город на латинице вводи)";
         sendMessage(chatId, text);
     }
@@ -164,6 +182,17 @@ public class HelperBot extends TelegramLongPollingBot {
         } catch (NullPointerException exception) {
             log.error("Введен некорректный город");
             formattedText = "Проверь название города";
+        }
+        sendMessage(chatId, formattedText);
+    }
+
+    private void handlePortScanCommand(Long chatId, String host) {
+        String formattedText;
+        List<Integer> ports = portScanService.scan(host);
+        if (ports.isEmpty()) {
+            formattedText = "Проверь название хоста, мне не удалось обнауржить открытые порты...";
+        } else {
+            formattedText = String.format("Открытые порты на %s:%n%s", host, portScanService.getInfo(ports));
         }
         sendMessage(chatId, formattedText);
     }

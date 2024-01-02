@@ -6,6 +6,7 @@ public enum Command {
     EUR("/eur"),
     WEATHER("/weather"),
     IP("/ip"),
+    SCAN_PORTS("/port_scan"),
     HELP("/help"),
     UNKNOWN("");
 
@@ -35,6 +36,9 @@ public enum Command {
             }
             case "/ip": {
                 return Command.IP;
+            }
+            case "/port_scan": {
+                return Command.SCAN_PORTS;
             }
             case "/help": {
                 return Command.HELP;
