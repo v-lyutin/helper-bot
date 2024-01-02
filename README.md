@@ -13,4 +13,7 @@
 [!] ***Бот работает только локально, деплой на сервер пока не произошел.***
 
 ### Пример работы бота
-https://github.com/v-lyutin/helper-bot/assets/134393650/46291faa-e727-499e-a4f5-9264e14091aa
+
+https://github.com/v-lyutin/helper-bot/assets/134393650/54e3073c-ce06-4ff5-b346-e09cb6aa9ca2
+
+
